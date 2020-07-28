@@ -9,6 +9,9 @@
 #include <fcntl.h> 
 
 
+void* customer(void* thread); //function for the thread/customer 
+
+
 int main(int argc, char *argv[]) {
     
    int available[argc - 1]; //Currently available resources.
@@ -16,8 +19,10 @@ int main(int argc, char *argv[]) {
        available[i] = atoi(argv[i+1]);
    }
    int maximum[5][4];
+   int allocation[5][4];
+   int need[5][4];
    int threadCount = readFile("sample4_in.txt", &maximum);
-   printf("%d", threadCount);
+   printf("%d\n", threadCount);
 
    //Command selection.
    /*
