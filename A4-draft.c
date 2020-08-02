@@ -89,7 +89,6 @@ int main(int argc, char *argv[])
 		}
 		else if (strstr(cmd, "RUN")){
 			runFunction();
-			printf("run %d %d %d %d %d\n", customer, r0, r1, r2, r3);
 		}
 		else if (strstr(cmd, "*")){
 			printf("Available: ");
