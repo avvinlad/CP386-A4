@@ -13,6 +13,7 @@ int readFile(char *fileName, int maximum[5][4]);
 int bankersAlgorithm(int nCustomers);
 void requestResources(int customer, int r0, int r1, int r2, int r3);
 void releaseResources(int customer, int r0, int r1, int r2, int r3);
+void runFunction();
 
 #define P 5 //processes
 #define R 4 //resources
@@ -57,7 +58,7 @@ int main(int argc, char *argv[])
 	//Command selection
 	int customer;
 	int r0, r1, r2, r3;
-	char command[100];
+	char command[100], cmd[2];
 	while (strcmp(command, "Q") != 0)
 	{
 		printf("Enter Command (Q to quit): ");
@@ -65,6 +66,7 @@ int main(int argc, char *argv[])
 
 		char *ptr = strtok(command, " \n");
 		int j = 0;
+		strcpy(cmd, ptr);
 		while (ptr != NULL){
 			if (j == 1){ customer = atoi(ptr); }
 			else if (j == 2){ r0 = atoi(ptr); }
@@ -77,21 +79,54 @@ int main(int argc, char *argv[])
 
 		// printf("User Entered: %d %d %d %d %d\n", customer, r0, r1, r2, r3);
 
-		if (strstr(command, "RQ")){
+		if (strstr(cmd, "RQ")){
 			printf("Processing Resouce Request\n");
 			requestResources(customer, r0, r1, r2, r3);
 		}
-		else if (strstr(command, "RL")){
+		else if (strstr(cmd, "RL")){
 			printf("Processing Resouce Release\n");
 			releaseResources(customer, r0, r1, r2, r3);
 		}
-		else if (strstr(command, "RUN")){
+		else if (strstr(cmd, "RUN")){
+			runFunction();
 			printf("run %d %d %d %d %d\n", customer, r0, r1, r2, r3);
 		}
-		else if (strstr(command, "*")){
-			printf("* %d %d %d %d %d\n", customer, r0, r1, r2, r3);
+		else if (strstr(cmd, "*")){
+			printf("Available: ");
+			for (int i = 0; i < R; i++){
+				printf("%d ", available[i]);
+			}
+			printf("\n\n");
+
+			printf("Maximum: \n");
+			for (int i = 0; i < P; i++){
+				for (int j = 0; j < R; j++){
+					printf("%d ", maximum[i][j]);
+				}
+				printf("\n");
+			}
+			printf("\n");
+
+			printf("Allocation: \n");
+			for (int i = 0; i < P; i++){
+				for (int j = 0; j < R; j++){
+					printf("%d ", allocation[i][j]);
+				}
+				printf("\n");
+			}
+			printf("\n");
+
+			printf("Need: \n");
+			for (int i = 0; i < P; i++){
+				for (int j = 0; j < R; j++){
+					printf("%d ", need[i][j]);
+				}
+				printf("\n");
+			}
+			printf("\n");
+
 		}
-		else if (strstr(command, "Q")){ break; }
+		else if (strstr(cmd, "Q")){ break; }
 	}
 }
 
@@ -159,10 +194,69 @@ int readFile(char *fileName, int maximum[5][4])
 	return threadCount;
 }
 
-// void *customerThread(void *thread){
-// 	int customer = (int)thread;
-// 	printf("customer[%d]\n", customer);
-// }
+void runFunction(){
+	for (int i = 0; i < threadCount; i++){
+		int safeSeqVal = safeSequence[i];
+
+		pthread_t thread; 
+		pthread_attr_t newThread;
+		pthread_create(&thread, &newThread, customerThread, (void*)&safeSeqVal);
+
+		pthread_join(thread, NULL);
+	}
+}
+
+void *customerThread(void *thread){
+	int customer = *(int *)thread;
+	printf("--> Customer [%d]\n", customer);
+
+	printf("\tAllocated resources: ");
+	for (int i = 0; i < R; i++){
+		printf("%d ", allocation[customer][i]);
+	}
+	printf("\n");
+
+	printf("\tNeeded: ");
+	for (int i = 0; i < R; i++){
+		printf("%d ", need[customer][i]);
+	}
+	printf("\n");
+
+	printf("\tAvailable: ");
+	for (int i = 0; i < R; i++){
+		printf("%d ", available[i]);
+	}
+	printf("\n");
+
+	printf("\tNeeded: ");
+	for (int i = 0; i < R; i++){
+		printf("%d ", need[customer][i]);
+	}
+	printf("\n");
+
+	printf("\tThread started\n");
+	printf("Thread releasing resources");
+	for (int i = 0; i < R; i++){
+		printf("%d ", need[customer][i]);
+	}
+	printf("\n");
+	for (int i = 0; i < R; i++){
+		available[i] += allocation[customer][i];
+		allocation[customer][i] = 0;
+		need[customer][i] = maximum[customer][i];
+	}
+
+	printf("\tNew Available: ");
+	for (int i = 0; i < R; i++){
+		printf("%d ", available[i]);
+	}
+	printf("\n");
+
+	printf("\tThread has finished\n");
+
+	pthread_exit(0);
+}
+
 
 int bankersAlgorithm(int nCustomers)
 {
