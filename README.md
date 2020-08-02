@@ -9,7 +9,7 @@ To install and compile the program, first clone the repository or download the M
 
 # Screenshots
 
-Refer to Screenshot.PNG in repository.
+Refer to repository for screenshots.
 
 # Contributors
 
