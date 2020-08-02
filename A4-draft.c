@@ -1,3 +1,15 @@
+/*
+
+CP 386 Assignment 4
+
+GitHub URL: https://github.com/hagenconnor/CP386-A4
+
+Name: Avin Lad
+GitHub Login: avvinlad
+Student ID: 180647870
+
+*/
+
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,7 +22,7 @@
 
 void *customerThread(void *thread); //function for the thread/customer
 int readFile(char *fileName, int maximum[5][4]);
-int bankersAlgorithm(int nCustomers);
+int safetyAlgorithm(int nCustomers);
 void requestResources(int customer, int r0, int r1, int r2, int r3);
 void releaseResources(int customer, int r0, int r1, int r2, int r3);
 void runFunction();
@@ -257,7 +269,7 @@ void *customerThread(void *thread){
 }
 
 
-int bankersAlgorithm(int nCustomers)
+int safetyAlgorithm(int nCustomers)
 {
 	int finish[5] = {0, 0, 0, 0, 0};
 	int safe = -1;
@@ -344,7 +356,7 @@ void requestResources(int customer, int r0, int r1, int r2, int r3)
 			need[customer][j] -= requestedResources[j];
 		}
 
-		int isSafe = bankersAlgorithm(threadCount);
+		int isSafe = safetyAlgorithm(threadCount);
 
 		printf("isSafe: %d\n", isSafe);
 
