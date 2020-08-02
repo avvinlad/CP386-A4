@@ -9,7 +9,7 @@ To install and compile the program, first clone the repository or download the M
 
 # Screenshots
 
-![](C:\Users\vinay\Desktop\Capture.PNG)
+Refer to Screenshot.PNG in repository.
 
 # Contributors
 
