@@ -42,7 +42,8 @@ int main(int argc, char *argv[])
 
 	if (argc != 5)
 	{
-		printf("Please use 4 arguments only.");
+		printf("Please use 4 arguments only. (Example: \"./Assignment_4 1 2 3 4\")\n");
+		return -1;
 	}
 
 	for (int i = 0; i < argc - 1; i++)
