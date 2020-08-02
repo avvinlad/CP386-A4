@@ -55,34 +55,35 @@ int main(int argc, char *argv[])
 	printf("\n");
 
 	//Command selection
-	int customer; 
+	int customer;
 	int r0, r1, r2, r3;
-
 	char command[100];
 	while (strcmp(command, "Q") != 0)
 	{
 		printf("Enter Command (Q to quit): ");
 		fgets(command, 100, stdin);
 
-		char *p = strtok(command, " ");
-		int i = 0;
-		while (p){
-			if (i == 0){ customer = atoi(p); }
-			else if (i == 1){ r0 = atoi(p); }
-			else if (i == 2){ r1 = atoi(p); }
-			else if (i == 3){ r2 = atoi(p); }
-			else if (i == 4){ r3 = atoi(p); }
-			i++;
-			p = strtok(NULL, " ");
+		char *ptr = strtok(command, " \n");
+		int j = 0;
+		while (ptr != NULL){
+			if (j == 1){ customer = atoi(ptr); }
+			else if (j == 2){ r0 = atoi(ptr); }
+			else if (j == 3){ r1 = atoi(ptr); }
+			else if (j == 4){ r2 = atoi(ptr); }
+			else if (j == 5){ r3 = atoi(ptr); }
+			j++;
+			ptr = strtok(NULL, " \n");
 		}
 
+		// printf("User Entered: %d %d %d %d %d\n", customer, r0, r1, r2, r3);
+
 		if (strstr(command, "RQ")){
-			printf("Processing Resouce Request...\n");
+			printf("Processing Resouce Request\n");
 			requestResources(customer, r0, r1, r2, r3);
-			// printf("User Entered: %d %d %d %d %d\n", customer, r0, r1, r2, r3);
 		}
 		else if (strstr(command, "RL")){
-			printf("rl %d %d %d %d %d\n", customer, r0, r1, r2, r3);
+			printf("Processing Resouce Release\n");
+			releaseResources(customer, r0, r1, r2, r3);
 		}
 		else if (strstr(command, "RUN")){
 			printf("run %d %d %d %d %d\n", customer, r0, r1, r2, r3);
@@ -158,16 +159,20 @@ int readFile(char *fileName, int maximum[5][4])
 	return threadCount;
 }
 
+// void *customerThread(void *thread){
+// 	int customer = (int)thread;
+// 	printf("customer[%d]\n", customer);
+// }
+
 int bankersAlgorithm(int nCustomers)
 {
 	int finish[5] = {0, 0, 0, 0, 0};
-	int safe = 0;
+	int safe = -1;
+	int execute = 0;
 	int total_customers = nCustomers;
 
-	while (total_customers > 0)
-	{
+	while (total_customers > 0){
 		safe = -1;
-		int execute = 0;
 		for (int i = 0; i < P; i++)
 		{
 			if (finish[i] == 0)
@@ -184,11 +189,10 @@ int bankersAlgorithm(int nCustomers)
 
 				if (execute == 1)
 				{
-					printf("\nProcess[%d] is executing.\n", i + 1);
+					safe = 0;
 					finish[i] = 1;
 					safeSequence[P - total_customers] = i;
 					total_customers--;
-					safe = 0;
 					for (int j = 0; j < R; j++)
 					{
 						available[j] += allocation[i][j];
@@ -200,7 +204,7 @@ int bankersAlgorithm(int nCustomers)
 
 		if (safe == -1)
 		{
-			printf("\nThe process is unsafe.\n");
+			printf("The process is unsafe.\n");
 			break;
 		}
 	}
@@ -249,7 +253,9 @@ void requestResources(int customer, int r0, int r1, int r2, int r3)
 
 		int isSafe = bankersAlgorithm(threadCount);
 
-		if (isSafe == 0)
+		printf("isSafe: %d\n", isSafe);
+
+		if (isSafe == -1)
 		{
 			for (i = 0; i < R; i++)
 			{
