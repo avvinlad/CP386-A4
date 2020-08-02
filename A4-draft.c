@@ -11,8 +11,8 @@
 void* customerThread(void* thread); //function for the thread/customer 
 int readFile(char *fileName, int maximum[5][4]);
 bool bankersAlgorithm(int nCustomers);
-void requestResources(int process, int r0, int r1, int r2, int r3);
-void releaseResources(int process, int r0, int r1, int r2, int r3);
+void requestResources(int customer, int r0, int r1, int r2, int r3);
+void releaseResources(int customer, int r0, int r1, int r2, int r3);
 
 int P = 5; //processes
 int R = 4  //resources
@@ -160,7 +160,7 @@ int bankersAlgorithm(int nCustomers){
 
 void requestResources(int customer, int r0, int r1, int r2, int r3){
 	bool canRequest = true;
-	int i, j, k;
+	int i, j;
 	int requestedResources[R]; 
 	
 	requestResources[0] = r0;
@@ -204,8 +204,34 @@ void requestResources(int customer, int r0, int r1, int r2, int r3){
 	return;
 }
 
-void releaseResources(int process, int r0, int r1, int r2, int r3){
+void releaseResources(int customer, int r0, int r1, int r2, int r3){
+	bool canRelease = true;
+	int i, j;
+	int releasedResources[R]; 
+	
+	releasedResources[0] = r0;
+	releasedResources[1] = r1;
+	releasedResources[2] = r2;
+	releasedResources[3] = r3;
 
+	for (i = 0; i < R; i++){
+		if (releaseResources[i] > allocation[customer][R]){ canRelease = false; }
+	}
+
+	if (!canRelease){
+		printf("Cannot complete release of resources.\n");
+	}
+	else{
+		for (j = 0; j < R; j++){
+			available[j] += releaseResources[j];
+			need[customer][j] += releaseResources[j];
+			allocation[customer][j] -= releaseResources[j];
+		}
+
+		printf("Resources Released Successfully.\n");
+	}
+
+	return;
 }
 
 
