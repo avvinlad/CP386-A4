@@ -10,9 +10,9 @@
 
 void* customerThread(void* thread); //function for the thread/customer 
 int readFile(char *fileName, int maximum[5][4]);
-bool safetyAlgorithm(int nCustomers);
-void requestResources(int process, int r1, int r2, int r3, int r4);
-void releaseResources(int process, int r1, int r2, int r3, int r4);
+bool bankersAlgorithm(int nCustomers);
+void requestResources(int process, int r0, int r1, int r2, int r3);
+void releaseResources(int process, int r0, int r1, int r2, int r3);
 
 int P = 5; //processes
 int R = 4  //resources
@@ -116,7 +116,7 @@ int readFile(char *fileName, int maximum[5][4]){
 	return threadCount;
 }
 
-int safetyAlgorithm(int nCustomers){
+int bankersAlgorithm(int nCustomers){
 	int finish[5] = {0, 0, 0, 0, 0};
 	bool safe = true;
 	int total_customers = nCustomers;
@@ -158,11 +158,53 @@ int safetyAlgorithm(int nCustomers){
 	return safe;
 }
 
-void requestResources(int process, int r1, int r2, int r3, int r4){
+void requestResources(int customer, int r0, int r1, int r2, int r3){
+	bool canRequest = true;
+	int i, j, k;
+	int requestedResources[R]; 
+	
+	requestResources[0] = r0;
+	requestResources[1] = r1;
+	requestResources[2] = r2;
+	requestResources[3] = r3;
 
+	for (i = 0; (i < R) && canRequest; i++){
+		if (requestResources[i] > need[customer][i]){ canRequest = false; }
+		if (requestResources[i] > available[i]) { canRequest = false; }
+	}
+
+	if (!canRequest){
+		printf("Cannot fufill reuqested resourcess.\n");
+	}
+	else{
+		for (i = 0; i < R; i++){ available[i] -= requestResources[i]; }
+
+		for (j = 0; j < R; j++){ 
+			allocation[customer][j] += requestResources[j]; 
+			need[customer][j] -= requestResources[j];
+		}
+
+		bool isSafe = bankersAlgorithm(threadCount);
+
+		if (!isSafe){
+			for (i = 0; i < R; i++){ available[i] += requestResources[i]; }
+
+			for (j = 0; j < R; j++){ 
+				allocation[customer][j] -= requestResources[j]; 
+				need[customer][j] += requestResources[j];
+			}
+
+			printf("Cannot fufill reuqested resourcess. Please wait patiently.\n");
+		}
+		else{
+			printf("Reuqested Resources Successful.\n");
+		}
+	}
+
+	return;
 }
 
-void releaseResources(int process, int r1, int r2, int r3, int r4){
+void releaseResources(int process, int r0, int r1, int r2, int r3){
 
 }
 
