@@ -2,7 +2,7 @@
 
 CP 386 Assignment 4
 
-GitHub URL: https://github.com/hagenconnor/CP386-A4
+GitHub URL: https://github.com/avvinlad/CP386-A4
 
 Name: Avin Lad
 GitHub Login: avvinlad
@@ -26,6 +26,7 @@ int safetyAlgorithm(int nCustomers);
 void requestResources(int customer, int r0, int r1, int r2, int r3);
 void releaseResources(int customer, int r0, int r1, int r2, int r3);
 void runFunction();
+void overview();
 
 #define P 5 //processes
 #define R 4 //resources
@@ -67,16 +68,24 @@ int main(int argc, char *argv[])
 	}
 	printf("\n");
 
+	printf("Maximum Resources From File:\n");
+	for (int i = 0; i < P; i++){
+		for (int j = 0; j < R; j++){
+			printf("%d ", maximum[i][j]);
+		}
+		printf("\n");
+	}
+
 	//Command selection
 	int customer;
 	int r0, r1, r2, r3;
 	char command[100], cmd[2];
 	while (strcmp(command, "Q") != 0)
 	{
-		printf("Enter Command (Q to quit): ");
+		printf("\nEnter Command (Q to quit): ");
 		fgets(command, 100, stdin);
 
-		char *ptr = strtok(command, " \n");
+		char *ptr = strtok(command, " \r\n");
 		int j = 0;
 		strcpy(cmd, ptr);
 		while (ptr != NULL){
@@ -86,58 +95,31 @@ int main(int argc, char *argv[])
 			else if (j == 4){ r2 = atoi(ptr); }
 			else if (j == 5){ r3 = atoi(ptr); }
 			j++;
-			ptr = strtok(NULL, " \n");
+			ptr = strtok(NULL, " \r\n");
 		}
 
 		// printf("User Entered: %d %d %d %d %d\n", customer, r0, r1, r2, r3);
 
 		if (strstr(cmd, "RQ")){
-			printf("Processing Resouce Request\n");
+			printf("Processing Resouce Request\n...\n");
 			requestResources(customer, r0, r1, r2, r3);
 		}
 		else if (strstr(cmd, "RL")){
-			printf("Processing Resouce Release\n");
+			printf("Processing Resouce Release\n...\n");
 			releaseResources(customer, r0, r1, r2, r3);
 		}
 		else if (strstr(cmd, "RUN")){
 			runFunction();
 		}
 		else if (strstr(cmd, "*")){
-			printf("Available: ");
-			for (int i = 0; i < R; i++){
-				printf("%d ", available[i]);
-			}
-			printf("\n\n");
-
-			printf("Maximum: \n");
-			for (int i = 0; i < P; i++){
-				for (int j = 0; j < R; j++){
-					printf("%d ", maximum[i][j]);
-				}
-				printf("\n");
-			}
-			printf("\n");
-
-			printf("Allocation: \n");
-			for (int i = 0; i < P; i++){
-				for (int j = 0; j < R; j++){
-					printf("%d ", allocation[i][j]);
-				}
-				printf("\n");
-			}
-			printf("\n");
-
-			printf("Need: \n");
-			for (int i = 0; i < P; i++){
-				for (int j = 0; j < R; j++){
-					printf("%d ", need[i][j]);
-				}
-				printf("\n");
-			}
+			overview();
 			printf("\n");
 
 		}
-		else if (strstr(cmd, "Q")){ break; }
+		else if (strstr(cmd, "Q")){ 
+			printf("Program Exited.\n");
+			break; 
+		}
 	}
 }
 
@@ -206,13 +188,18 @@ int readFile(char *fileName, int maximum[5][4])
 }
 
 void runFunction(){
-	for (int i = 0; i < threadCount; i++){
-		int safeSeqVal = safeSequence[i];
+	printf("Safe Sequence: <");
+	for (int i = 0; i < P; i++){
+		printf("%d", safeSequence[i]);
+		if (i <(P-1)){ printf(" "); }
+	}
+	printf(">\n");
 
+
+	printf("Executing Threads:\n");
+	for (int j = 0; j < threadCount; j++){
 		pthread_t thread; 
-		pthread_attr_t newThread;
-		pthread_create(&thread, &newThread, customerThread, (void*)&safeSeqVal);
-
+		pthread_create(&thread, NULL, customerThread, &j);
 		pthread_join(thread, NULL);
 	}
 }
@@ -246,7 +233,8 @@ void *customerThread(void *thread){
 	printf("\n");
 
 	printf("\tThread started\n");
-	printf("Thread releasing resources");
+	
+	printf("\tThread releasing resources: ");
 	for (int i = 0; i < R; i++){
 		printf("%d ", need[customer][i]);
 	}
@@ -268,58 +256,8 @@ void *customerThread(void *thread){
 	pthread_exit(0);
 }
 
-
-int safetyAlgorithm(int nCustomers)
-{
-	int finish[5] = {0, 0, 0, 0, 0};
-	int safe = -1;
-	int execute = 0;
-	int total_customers = nCustomers;
-
-	while (total_customers > 0){
-		safe = -1;
-		for (int i = 0; i < P; i++)
-		{
-			if (finish[i] == 0)
-			{
-				execute = 1;
-				for (int j = 0; j < R; j++)
-				{
-					if (need[i][j] > available[j])
-					{
-						execute = 0;
-						break;
-					}
-				}
-
-				if (execute == 1)
-				{
-					safe = 0;
-					finish[i] = 1;
-					safeSequence[P - total_customers] = i;
-					total_customers--;
-					for (int j = 0; j < R; j++)
-					{
-						available[j] += allocation[i][j];
-					}
-					break;
-				}
-			}
-		}
-
-		if (safe == -1)
-		{
-			printf("The process is unsafe.\n");
-			break;
-		}
-	}
-	return safe;
-}
-
 void requestResources(int customer, int r0, int r1, int r2, int r3)
 {
-	int canRequest = 1;
-	int i, j;
 	int requestedResources[R];
 
 	requestedResources[0] = r0;
@@ -327,57 +265,41 @@ void requestResources(int customer, int r0, int r1, int r2, int r3)
 	requestedResources[2] = r2;
 	requestedResources[3] = r3;
 
-	for (i = 0; (i < R) && (canRequest == 0); i++)
-	{
-		if (requestedResources[i] > need[customer][i])
-		{
-			canRequest = 0;
-		}
-		if (requestedResources[i] > available[i])
-		{
-			canRequest = 0;
-		}
-	}
 
-	if (!canRequest)
-	{
-		printf("Cannot fufill reuqested resourcess.\n");
-	}
-	else
-	{
-		for (i = 0; i < R; i++)
-		{
-			available[i] -= requestedResources[i];
-		}
+	if (r0 <= need[customer][0] && r1 <= need[customer][1] 
+	&& r2 <= need[customer][2] && r3 <= need[customer][3]){
 
-		for (j = 0; j < R; j++)
-		{
-			allocation[customer][j] += requestedResources[j];
-			need[customer][j] -= requestedResources[j];
-		}
+		if (r0 <= available[0] && r1 <= available[1] 
+		&& r2 <= available[2] && r3 <= available[3]){
 
-		int isSafe = safetyAlgorithm(threadCount);
-
-		printf("isSafe: %d\n", isSafe);
-
-		if (isSafe == -1)
-		{
-			for (i = 0; i < R; i++)
+			for (int i = 0; i < R; i++)
 			{
-				available[i] += requestedResources[i];
+				available[i] -= requestedResources[i];
+				allocation[customer][i] += requestedResources[i];
+				need[customer][i] -= requestedResources[i];
 			}
 
-			for (j = 0; j < R; j++)
+			int isSafe = safetyAlgorithm(threadCount);
+
+			if (isSafe == -1)
 			{
-				allocation[customer][j] -= requestedResources[j];
-				need[customer][j] += requestedResources[j];
+				for (int i = 0; i < R; i++)
+				{
+					available[i] += requestedResources[i];
+				}
+
+				for (int j = 0; j < R; j++)
+				{
+					allocation[customer][j] -= requestedResources[j];
+					need[customer][j] += requestedResources[j];
+				}
+				printf("Cannot fufill requested resourcess. Please wait patiently.\n");
+			}
+			else
+			{
+				printf("Requested Resources SUCCESSFUL.\n");
 			}
 
-			printf("Cannot fufill reuqested resourcess. Please wait patiently.\n");
-		}
-		else
-		{
-			printf("Reuqested Resources Successful.\n");
 		}
 	}
 
@@ -386,8 +308,6 @@ void requestResources(int customer, int r0, int r1, int r2, int r3)
 
 void releaseResources(int customer, int r0, int r1, int r2, int r3)
 {
-	int canRelease = 1;
-	int i, j;
 	int releasedResources[R];
 
 	releasedResources[0] = r0;
@@ -395,29 +315,122 @@ void releaseResources(int customer, int r0, int r1, int r2, int r3)
 	releasedResources[2] = r2;
 	releasedResources[3] = r3;
 
-	for (i = 0; (i < R) && (canRelease == 1); i++)
-	{
-		if (releasedResources[i] > allocation[customer][i])
-		{
-			canRelease = 0;
-		}
-	}
 
-	if (!canRelease)
-	{
-		printf("Cannot complete release of resources.\n");
-	}
-	else
-	{
-		for (j = 0; j < R; j++)
+	if (r0 <= allocation[customer][0] && r1 <= allocation[customer][1] 
+		&& r2 <= allocation[customer][2] && r3 <= allocation[customer][3]){
+
+		for (int j = 0; j < R; j++)
 		{
 			available[j] += releasedResources[j];
 			need[customer][j] += releasedResources[j];
 			allocation[customer][j] -= releasedResources[j];
 		}
 
-		printf("Resources Released Successfully.\n");
+		printf("Released Resources SUCCESSFUL.\n");
+	}
+	else{
+		printf("Cannot release resources.\n");
 	}
 
 	return;
+}
+
+
+int safetyAlgorithm(int nCustomers)
+{
+	int avl[R];
+	int all[P][R];
+	int needCopy[P][R];
+
+	for (int i = 0; i < R; i++){
+		avl[i] = available[i];
+	}
+
+	for (int j = 0; j < P; j++){
+		for (int k = 0; k < R; k++){
+			all[j][k] = allocation[j][k];
+			needCopy[j][k] = need[j][k];
+		}
+	}
+
+	int finish[5] = {0, 0, 0, 0, 0};
+	int isSafe = -1;
+	int execute = 0;
+	int total_customers = nCustomers;
+
+	while (total_customers != 0){
+		isSafe = -1;
+		for (int i = 0; i < P; i++)
+		{
+			if (finish[i] == 0)
+			{
+				execute = 1;
+				for (int j = 0; j < R; j++)
+				{
+					if (needCopy[i][j] > avl[j])
+					{
+						execute = 0;
+						break;
+					}
+				}
+
+				if (execute == 1)
+				{
+					isSafe = 0;
+					finish[i] = 1;
+					safeSequence[P - total_customers] = i;
+					total_customers--;
+					for (int j = 0; j < R; j++)
+					{
+						avl[j] += all[i][j];
+					}
+					break;
+				}
+			}
+		}
+
+		if (isSafe == -1)
+		{
+			printf("The process is unsafe.\n");
+			break;
+		}
+	}
+
+	return isSafe;
+}
+
+
+
+void overview(){
+	printf("Available: ");
+	for (int i = 0; i < R; i++){
+		printf("%d ", available[i]);
+	}
+	printf("\n\n");
+
+	printf("Maximum: \n");
+	for (int i = 0; i < P; i++){
+		for (int j = 0; j < R; j++){
+			printf("%d ", maximum[i][j]);
+		}
+		printf("\n");
+	}
+	printf("\n");
+
+	printf("Allocation: \n");
+	for (int i = 0; i < P; i++){
+		for (int j = 0; j < R; j++){
+			printf("%d ", allocation[i][j]);
+		}
+		printf("\n");
+	}
+	printf("\n");
+
+	printf("Need: \n");
+	for (int i = 0; i < P; i++){
+		for (int j = 0; j < R; j++){
+			printf("%d ", need[i][j]);
+		}
+		printf("\n");
+	}
 }
