@@ -15,5 +15,3 @@ Refer to Screenshot.PNG in repository.
 
 Avin Lad, 18064787
 
-Connor Hagen
-
